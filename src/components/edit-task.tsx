@@ -1,6 +1,6 @@
-import { Input } from "@base-ui/react/input"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog"
-import { Button } from "./ui/button"
+import { Input } from "@/components/ui/input"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Button } from "@/components/ui/button"
 import { SquarePen } from "lucide-react"
 
 const EditTask = () => {
@@ -16,7 +16,7 @@ const EditTask = () => {
               </DialogHeader>
 
               <div className= "flex gap-2">
-                <Input placeholder="Editar tarefa"/>
+                <Input placeholder="Editar tarefa" className="flex-1"/>
                 <Button className="cursor-pointer" variant="default">Editar</Button>
               </div>
             </DialogContent> 

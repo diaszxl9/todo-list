@@ -1,25 +1,43 @@
-import { Separator } from "../components/ui/separator";
-import { Button } from "../components/ui/button";
-import { Card, CardContent, CardHeader} from "../components/ui/card";
-import { Input } from "../components/ui/input";
+"use client"
+import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { Plus, Info, Menu, Check, Trash, ListCheck, Sigma } from 'lucide-react';
-import { Badge } from "../components/ui/badge";
+import { Badge } from "@/components/ui/badge";
 import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
-  AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "../components/ui/alert-dialog"
-import EditTask from "../components/edit-task";
+} from "@/components/ui/alert-dialog"
+import EditTask from "@/components/edit-task";
+import {getTask} from "@/actions/get-tasks-from-db"
+import { useState } from "react";
+import type { Task } from "@/generated/prisma/client"
 
 
 
 const Home = () => {
+
+  const [taskList, setTaskList] = useState<Task[]>([])
+
+  const handleGetTask = async () => {
+    const tasks = await getTask()
+
+    if(!tasks) return
+
+    setTaskList(tasks)
+
+    console.log(tasks)
+  }
+
+console.log(taskList)
+
   return (
     <main className = "w-full h-screen bg-gray-100 flex justify-center items-center">
       <Card className= "w-lg ">
@@ -27,7 +45,7 @@ const Home = () => {
           <Input placeholder ="Adicionar tarefa" />
           <Button className="cursor-pointer"> <Plus/> Cadastrar </Button >
         </CardHeader>
-
+        <Button onClick={handleGetTask}>Buscar Tarefas</Button>
         <CardContent>
           <Separator className="mb-4"/>
           <div className="flex gap-2">
@@ -58,9 +76,10 @@ const Home = () => {
             </div>
 
             <AlertDialog>
-            <AlertDialogTrigger>
-              <Button className="text-xs h-7 cursor-pointer" variant="outline"> <Trash/> Limpar 
-            Tarefas Concluidas</Button>
+            <AlertDialogTrigger
+              render={<Button className="text-xs h-7 cursor-pointer" variant="outline" />}
+            >
+              <Trash/> Limpar Tarefas Concluidas
             </AlertDialogTrigger>
 
             <AlertDialogContent>
