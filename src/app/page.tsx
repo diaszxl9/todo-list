@@ -3,8 +3,7 @@ import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Plus, Info, Menu, Check, Trash, ListCheck, Sigma } from 'lucide-react';
-import { Badge } from "@/components/ui/badge";
+import { Plus, Trash, ListCheck, Sigma, LoaderCircle  } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,6 +21,9 @@ import type { Task } from "@/generated/prisma/client"
 import { NewTask } from "@/actions/add-task"
 import { deleteTask } from "@/actions/delete-task"
 import { toast } from "sonner";
+import { updateTaskStatus } from "@/actions/toggle-done";
+import Filter from "@/components/filter";
+import { FilterType } from "@/components/filter";
 
 
 
@@ -30,6 +32,8 @@ const Home = () => {
 
   const [taskList, setTaskList] = useState<Task[]>([])
   const [task, setTask] = useState<string>('')
+  const [loading, setLoading] = useState<boolean>(false)
+  const [currentFilter, setCurrentFilter] = useState<FilterType>('all')
 
   const handleGetTask = async () => {
     try{
@@ -42,14 +46,20 @@ const Home = () => {
   }
 
   const handleAddTask = async  () => {
+    setLoading(true)
     try {
       if(task.length === 0 || !task) {
+        toast.error("Insira uma tarefa")
+        setLoading(false)
       return
     }
 
     const myNewTask = await NewTask(task)
 
       if(!myNewTask) return
+
+      setTask('')
+
       await handleGetTask()
 
       toast.success("atividade adicionada com sucesso!")
@@ -57,6 +67,7 @@ const Home = () => {
     }catch(error){
       throw error
     }
+    setLoading(false)
   }
 
   const handleDeleteTask = async (id: string) =>{
@@ -79,36 +90,65 @@ const Home = () => {
     
   }
 
+  const handleToggleTask = async (taskId: string) => {
+    const previousTask = [... taskList]
+
+    try{
+      setTaskList((prev) => {
+      const updatedTaskList = prev.map(task => {
+        if(task.id === taskId) {
+          return {
+            ... task,
+            done : !task.done
+          }
+        }else {
+          return task
+        }
+      })
+      return updatedTaskList
+    })
+     await updateTaskStatus(taskId)
+    
+    }catch(error){
+      setTaskList(previousTask)
+      throw error
+    }
+  }
 
   useEffect (() => {
-    handleGetTask()
+    getTask().then((tasks) => {
+      if(tasks) setTaskList(tasks)
+    })
   }, [])
 
   return (
     <main className = "w-full h-screen bg-gray-100 flex justify-center items-center">
       <Card className= "w-lg ">
         <CardHeader className = "flex gap-2">
-          <Input placeholder ="Adicionar tarefa" onChange={(e)=> setTask(e.target.value) } />
-          <Button className="cursor-pointer" onClick={handleAddTask}> <Plus/> Cadastrar </Button >
+          <Input placeholder ="Adicionar tarefa" onChange={(e)=> setTask(e.target.value)} value={task} />
+          <Button className="cursor-pointer" onClick={handleAddTask}>
+
+          {loading ? <LoaderCircle className="animate-spin"/> : <Plus/>}
+            Cadastrar </Button >
         </CardHeader>
         
         <CardContent>
           <Separator className="mb-4"/>
-          <div className="flex gap-2">
-            <Badge className="cursor-pointer" variant="default"> <Menu/> Todas </Badge>
-            <Badge className="cursor-pointer" variant="outline"> <Info/> Não finalizadas </Badge>
-            <Badge className="cursor-pointer" variant="outline"> <Check/> Concluidas </Badge>
-          </div>
+          <Filter currentFilter = {currentFilter} setCurrentFilter = {setCurrentFilter}/>
 
           <div className= "mt-4 border b"> 
-
+          {taskList.length === 0 && <p className="text-xs border-t py-4">Você não possui tarefas cadastradas.</p>}
            {taskList.map(task => (
             <div className ="h-14 flex justify-between items-center border-b border-t" key = {task.id}>
-              <div className = "w-1 h-full bg-green-300"></div>
-              <p className="flex-1 px-2 text-sm">{task.task}</p>
+              <div className = {`${task.done ? 'w-1 h-full bg-green-400' : 'w-1 h-full bg-red-400'}`}></div>
+
+              <p className="flex-1 px-2 text-sm cursor-pointer hover:text-gray-700" 
+              onClick={() => handleToggleTask(task.id)}
+              >{task.task}</p>
+
               <div className = "flex gap-2 items-center">
 
-              <EditTask/>
+              <EditTask task ={task} handleGetTask ={handleGetTask} />
           
                  <Trash size ={16} className="cursor-pointer" onClick={() => handleDeleteTask(task.id)}/> 
               </div>
