@@ -1,6 +1,6 @@
 # To-do List
 
-Uma lista de tarefas full stack feita com Next.js, React, Prisma e PostgreSQL. As tarefas ficam salvas no banco, então nada se perde ao recarregar a página.
+Uma lista de tarefas full stack feita com Next.js, React.js, TypeScript, PostgreSQL, Prisma ORM, Tailwind CSS e Shadcn UI. As tarefas ficam salvas no banco, então nada se perde ao recarregar a página.
 
 ## O que dá pra fazer
 
